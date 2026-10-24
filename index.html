@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,15 +33,9 @@
     }
 
     h1 {
-      margin-top: 5px;
+      margin: 5px 0 18px;
       color: #b7f36b;
       font-size: 25px;
-    }
-
-    .subtitle {
-      color: #d4e7c9;
-      font-size: 14px;
-      line-height: 1.5;
     }
 
     .preview-container {
@@ -67,7 +61,8 @@
     }
 
     video[hidden],
-    img[hidden] {
+    img[hidden],
+    button[hidden] {
       display: none !important;
     }
 
@@ -182,12 +177,6 @@
       overflow-wrap: anywhere;
     }
 
-    .footer {
-      margin-top: 20px;
-      color: #899987;
-      font-size: 12px;
-    }
-
     @media (max-width: 360px) {
       body {
         padding: 16px 10px;
@@ -218,10 +207,6 @@
   <main class="card">
 
     <h1>ANIMAL CLASSIFIER</h1>
-
-    <p class="subtitle">
-      Capture an animal photo and let the AI identify it.
-    </p>
 
     <div class="preview-container">
       <div id="placeholder">
@@ -291,10 +276,6 @@
       <h2 id="prediction"></h2>
     </section>
 
-    <p class="footer">
-      Powered by Teachable Machine
-    </p>
-
     <canvas id="photoCanvas" hidden></canvas>
 
   </main>
@@ -324,6 +305,7 @@
     let cameraStream = null;
     let photoReady = false;
     let isClassifying = false;
+    let isOpeningCamera = false;
 
     async function loadModel() {
       try {
@@ -367,12 +349,18 @@
     }
 
     async function openCamera() {
-      stopCamera();
+      if (isOpeningCamera || cameraStream) {
+        return;
+      }
+
+      isOpeningCamera = true;
 
       photoReady = false;
       classifyButton.disabled = true;
       captureButton.disabled = false;
+
       startButton.disabled = true;
+      startButton.hidden = true;
 
       resultsSection.hidden = true;
       preview.hidden = true;
@@ -419,8 +407,10 @@
 
         await camera.play();
 
-        startButton.textContent = "Camera Open";
+        // Do not show a "Camera Open" button.
+        startButton.hidden = true;
         captureButton.hidden = false;
+        captureButton.disabled = false;
 
         statusText.textContent =
           "Position the animal inside the camera view, then tap Capture Photo.";
@@ -439,12 +429,14 @@
 
         captureButton.hidden = true;
         startButton.textContent = "Try Camera Again";
+        startButton.hidden = false;
 
         statusText.textContent =
           "Camera error: " +
           (error.message || "Permission denied.");
 
       } finally {
+        isOpeningCamera = false;
         startButton.disabled = false;
       }
     }
@@ -499,6 +491,7 @@
           captureButton.disabled = false;
 
           startButton.textContent = "Take Another Picture";
+          startButton.hidden = false;
 
           photoReady = true;
           resultsSection.hidden = true;
@@ -516,6 +509,9 @@
 
           photoReady = false;
           captureButton.disabled = false;
+
+          startButton.hidden = false;
+          startButton.textContent = "Try Camera Again";
 
           statusText.textContent =
             "The photo preview could not be displayed. Please try again.";
@@ -636,4 +632,3 @@
   </script>
 </body>
 </html>
-```
